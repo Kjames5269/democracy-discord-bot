@@ -1,0 +1,27 @@
+{
+  "name": "demo-bot",
+  "version": "0.0.1",
+  "description": "a bot to help with democracy in discrod",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "''"
+  },
+  "keywords": [
+    "''"
+  ],
+  "author": "Kjames",
+  "license": "MIT",
+  "dependencies": {
+    "bufferutil": "^3.0.2",
+    "discord.js": "^11.1.0",
+    "libsodium-wrappers": "^0.5.2",
+    "node-opus": "^0.2.6",
+    "opusscript": "0.0.3",
+    "sodium": "^2.0.1",
+    "uws": "^0.14.5"
+  }
+}
