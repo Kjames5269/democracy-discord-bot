@@ -3,7 +3,7 @@ const Promise = require('bluebird');
 
 const url='mongodb://localhost:27017/demo';
 
-export function getNewVoteID() {
+function getNewVoteID() {
   console.log('getVoteID starting');
   return new Promise((resolve, reject) => {
     MongoClient.connect(url, (err, db) => {
@@ -24,29 +24,32 @@ export function getNewVoteID() {
   });
 };
 
-export function addNewVote(id, voteMsg, onSuccessful) {
+export function addNewVote(voteMsg, onSuccessful) {
   return new Promise((resolve, reject) => {
-    MongoClient.connect(url, (err, db) => {
-      const col = db.collection('votes');
-      col.insertOne(
-        {
-          '_id': id,
-          'message': voteMsg,
-          'users': [],
-          'onSuccess': onSuccessful
-        },
-        {},
-        (err, doc) => {
-          db.close();
-          console.log(err);
-          if(err === null) {
-            resolve(doc)
+    getNewVoteID().then((doc, err) => {
+      const id = doc.value.lastVoteID;
+      MongoClient.connect(url, (err, db) => {
+        const col = db.collection('votes');
+        col.insertOne(
+          {
+            '_id': id,
+            'message': voteMsg,
+            'users': [],
+            'onSuccess': onSuccessful
+          },
+          {},
+          (err, doc) => {
+            db.close();
+            //  console.log(err);
+            if(err === null) {
+              resolve(doc)
+            }
+            else {
+              reject(err);
+            }
           }
-          else {
-            reject(err);
-          }
-        }
-      );
+        );
+      });
     });
   });
 };

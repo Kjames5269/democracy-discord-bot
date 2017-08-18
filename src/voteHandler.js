@@ -7,22 +7,15 @@ const VOTE_S = 3
 
 export function createNewVote(cli, message, success) {
   const voteArr = message.content.split(' ');
-  db.getNewVoteID().then((doc, err) => {
     //console.log(doc);
-    const voteID = doc.value.lastVoteID;
-    const voteMsg = message.content.substring(message.content.indexOf('vote')+5);
-    db.addNewVote(voteID, voteMsg, success).then((doc, err) => {
-      //console.log(doc);
-      message.reply('Started vote with ID: ' + voteID + '\n'
-      + voteMsg + '\nvote ' + voteID + ' [yes] [no]');
-    }).catch(e => {
-      message.reply('There was a problem starting the vote at this time');
-      console.log('Caught error during insertOne');
-      console.log(e);
-    });
+  const voteMsg = message.content.substring(message.content.indexOf('vote')+5);
+  db.addNewVote(voteMsg, success).then((doc, err) => {
+    const voteID = doc.ops[0]._id;
+    message.reply('Started vote with ID: ' + voteID + '\n'
+    + voteMsg + '\nvote ' + voteID + ' [yes] [no]');
   }).catch(e => {
     message.reply('There was a problem starting the vote at this time');
-    console.log('Caught error during getVoteId');
+    console.log('Caught error during insertOne');
     console.log(e);
   });
 }
