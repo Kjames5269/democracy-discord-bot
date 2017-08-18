@@ -21,6 +21,30 @@ export function getAnarchy() {
   });
 };
 
+export function changeAnarchy(to) {
+  return new Promise((resolve, reject) => {
+    if(to != 'true' && to != 'false' ) {
+      reject('incorrect bool value');
+      return;
+    }
+    MongoClient.connect(url, (err, db) => {
+      const col = db.collection('config');
+      col.updateOne({_id:'CONFIG'},
+      { $set: { anarchy: to }},
+      (err,doc) => {
+        db.close();
+        if(err === null) {
+          resolve(doc);
+        }
+        else {
+          reject(err);
+        }
+      });
+    });
+  });
+};
+
+
 function getNewVoteID() {
   console.log('getVoteID starting');
   return new Promise((resolve, reject) => {
