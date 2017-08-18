@@ -3,6 +3,24 @@ const Promise = require('bluebird');
 
 const url='mongodb://localhost:27017/demo';
 
+export function getAnarchy() {
+  return new Promise((resolve, reject) => {
+    MongoClient.connect(url, (err, db) => {
+      const col = db.collection('config');
+      col.findOne({_id:'CONFIG'},
+      (err,doc) => {
+        db.close();
+        if(err === null) {
+          resolve(doc.anarchy);
+        }
+        else {
+          reject(err);
+        }
+      });
+    });
+  });
+};
+
 function getNewVoteID() {
   console.log('getVoteID starting');
   return new Promise((resolve, reject) => {
