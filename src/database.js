@@ -24,7 +24,7 @@ export function getNewVoteID() {
   });
 };
 
-export function addNewVote(id, voteMsg) {
+export function addNewVote(id, voteMsg, onSuccessful) {
   return new Promise((resolve, reject) => {
     MongoClient.connect(url, (err, db) => {
       const col = db.collection('votes');
@@ -32,11 +32,13 @@ export function addNewVote(id, voteMsg) {
         {
           '_id': id,
           'message': voteMsg,
-          'users': []
+          'users': [],
+          'onSuccess': onSuccessful
         },
         {},
         (err, doc) => {
           db.close();
+          console.log(err);
           if(err === null) {
             resolve(doc)
           }

@@ -5,6 +5,28 @@ const errMsg = 'vote is used as follows: \nvote "message" to start a vote\nvote 
 const VOTE_ID_S = 2;
 const VOTE_S = 3
 
+export function createNewVote(cli, message, success) {
+  const voteArr = message.content.split(' ');
+  db.getNewVoteID().then((doc, err) => {
+    //console.log(doc);
+    const voteID = doc.value.lastVoteID;
+    const voteMsg = message.content.substring(message.content.indexOf('vote')+5);
+    db.addNewVote(voteID, voteMsg, success).then((doc, err) => {
+      //console.log(doc);
+      message.reply('Started vote with ID: ' + voteID + '\n'
+      + voteMsg + '\nvote ' + voteID + ' [yes] [no]');
+    }).catch(e => {
+      message.reply('There was a problem starting the vote at this time');
+      console.log('Caught error during insertOne');
+      console.log(e);
+    });
+  }).catch(e => {
+    message.reply('There was a problem starting the vote at this time');
+    console.log('Caught error during getVoteId');
+    console.log(e);
+  });
+}
+
 export function handler(cli, message) {
   console.log('starting vote')
   const voteArr = message.content.split(' ');
@@ -15,24 +37,7 @@ export function handler(cli, message) {
     return;
   }
   else if (isNaN(voteArr[VOTE_ID_S])) {
-    db.getNewVoteID().then((doc, err) => {
-      //console.log(doc);
-      const voteID = doc.value.lastVoteID;
-      const voteMsg = message.content.substring(message.content.indexOf('vote')+5);
-      db.addNewVote(voteID, voteMsg).then((doc, err) => {
-        //console.log(doc);
-        message.reply('Started vote with ID: ' + voteID + '\n'
-        + voteMsg + '\nvote ' + voteID + ' [yes] [no]');
-      }).catch(e => {
-        message.reply('There was a problem starting the vote at this time');
-        console.log('Caught error during insertOne');
-        console.log(e);
-      });
-    }).catch(e => {
-      message.reply('There was a problem starting the vote at this time');
-      console.log('Caught error during getVoteId');
-      console.log(e);
-    });
+    createNewVote(cli, message);
   }
   else if (voteArr.length <= 4 ) {
     if(voteArr[VOTE_S] === 'yes') {
@@ -77,6 +82,7 @@ function postResults(voteID, message) {
       message.reply('No votes found with ID ' + voteID);
       return
     }
+
     const users = doc.users;
     var yes = 0;
     var no = 0;
