@@ -4,7 +4,8 @@
   "description": "a bot to help with democracy in discrod",
   "main": "index.js",
   "scripts": {
-    "test": "test"
+    "test": "test",
+    "dev": "babel src --out-dir lib && node lib/index.js"
   },
   "repository": {
     "type": "git",
@@ -16,12 +17,19 @@
   "author": "Kjames",
   "license": "MIT",
   "dependencies": {
+    "bluebird": "^3.5.0",
     "bufferutil": "^3.0.2",
     "discord.js": "^11.1.0",
     "libsodium-wrappers": "^0.5.2",
+    "mongodb": "^2.2.31",
     "node-opus": "^0.2.6",
     "opusscript": "0.0.3",
     "sodium": "^2.0.1",
     "uws": "^0.14.5"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-plugin-transform-export-extensions": "^6.22.0",
+    "babel-preset-es2015": "^6.24.1"
   }
 }
