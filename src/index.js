@@ -26,10 +26,11 @@ client.login('MzQ0MzY2NDAxMjUyNzUzNDQw.DGrwUg.fp_ATYKP7Ph_C9m3531A3PYpwvs');
 
 
 function handler(cli, message) {
-	if(message.content.split(' ')[1] === 'vote') {
+	const demo = message.content.split(' ');
+	if(demo[1] === 'vote') {
 		Vote.handler(cli, message);
 	}
-	if(message.content.split(' ')[1] === 'stuff') {
+	if(demo[1] === 'anarchy') {
 		console.log('starting stuff');
 	}
 }
