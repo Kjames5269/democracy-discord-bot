@@ -1,7 +1,6 @@
 const Discord = require('discord.js');
 const client = new Discord.Client();
-const MessageHandler = require('./messageHandler.js');
-const Vote = require('./voteHandler.js');
+import msgHandler from './messageHandler.js';
 
 client.on('ready', () => {
 	console.log('Ready Sirrrrrr.');
@@ -18,19 +17,10 @@ client.on('message', message => {
 	}
 	const temp = message.content.match(demo);
 	if(temp) {
-		handler(client,message);
+		msgHandler(client,message);
 	}
 });
 
 client.login('MzQ0MzY2NDAxMjUyNzUzNDQw.DGrwUg.fp_ATYKP7Ph_C9m3531A3PYpwvs');
 
 
-function handler(cli, message) {
-	const demo = message.content.split(' ');
-	if(demo[1] === 'vote') {
-		Vote.handler(cli, message);
-	}
-	if(demo[1] === 'anarchy') {
-		console.log('starting stuff');
-	}
-}
