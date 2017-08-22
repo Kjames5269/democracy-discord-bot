@@ -8,4 +8,7 @@ export default function (cli, message) {
 	if(demo[1] === 'anarchy') {
 		console.log('starting stuff');
 	}
+	if(demo[1] === 'init') {
+		console.log(message.channel.guild.id);
+	}
 }

@@ -3,11 +3,11 @@ const Promise = require('bluebird');
 
 const url='mongodb://localhost:27017/demo';
 
-export function getAnarchy() {
+export function getAnarchy(disID) {
   return new Promise((resolve, reject) => {
     MongoClient.connect(url, (err, db) => {
       const col = db.collection('config');
-      col.findOne({_id:'CONFIG'},
+      col.findOne({_id: disID},
       (err,doc) => {
         db.close();
         if(err === null) {
@@ -21,7 +21,7 @@ export function getAnarchy() {
   });
 };
 
-export function changeAnarchy(to) {
+export function changeAnarchy(to, disID) {
   return new Promise((resolve, reject) => {
     if(to != 'true' && to != 'false' ) {
       reject('incorrect bool value');
@@ -29,7 +29,7 @@ export function changeAnarchy(to) {
     }
     MongoClient.connect(url, (err, db) => {
       const col = db.collection('config');
-      col.updateOne({_id:'CONFIG'},
+      col.updateOne({_id: disID},
       { $set: { anarchy: to }},
       (err,doc) => {
         db.close();
@@ -45,12 +45,12 @@ export function changeAnarchy(to) {
 };
 
 
-function getNewVoteID() {
+function getNewVoteID(disID) {
   console.log('getVoteID starting');
   return new Promise((resolve, reject) => {
     MongoClient.connect(url, (err, db) => {
       const col = db.collection('config');
-      col.findOneAndUpdate({_id:'CONFIG'},
+      col.findOneAndUpdate({_id: disID},
       { $inc: {'lastVoteID': 1}},
       { returnOriginal: false },
       (err,doc) => {
@@ -66,9 +66,9 @@ function getNewVoteID() {
   });
 };
 
-export function addNewVote(voteMsg, onSuccessful) {
+export function addNewVote(voteMsg, onSuccessful, disID) {
   return new Promise((resolve, reject) => {
-    getNewVoteID().then((doc, err) => {
+    getNewVoteID(disID).then((doc, err) => {
       const id = doc.value.lastVoteID;
       MongoClient.connect(url, (err, db) => {
         const col = db.collection('votes');
@@ -77,7 +77,8 @@ export function addNewVote(voteMsg, onSuccessful) {
             '_id': id,
             'message': voteMsg,
             'users': [],
-            'onSuccess': onSuccessful
+            'onSuccess': onSuccessful,
+            'config': disID
           },
           {},
           (err, doc) => {

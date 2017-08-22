@@ -5,11 +5,11 @@ const errMsg = 'vote is used as follows: \nvote "message" to start a vote\nvote 
 const VOTE_ID_S = 2;
 const VOTE_S = 3
 
-export function createNewVote(cli, message, success) {
+export function createNewVote(cli, message, disID, success) {
   const voteArr = message.content.split(' ');
     //console.log(doc);
   const voteMsg = message.content.substring(message.content.indexOf('vote')+5);
-  db.addNewVote(voteMsg, success).then((doc, err) => {
+  db.addNewVote(voteMsg, success, disID).then((doc, err) => {
     const voteID = doc.ops[0]._id;
     message.reply('Started vote with ID: ' + voteID + '\n'
     + voteMsg + '\nvote ' + voteID + ' [yes] [no]');
@@ -23,6 +23,7 @@ export function createNewVote(cli, message, success) {
 export function handler(cli, message) {
   console.log('starting vote')
   const voteArr = message.content.split(' ');
+  const disID = message.channel.guild.id;
 
   console.log(voteArr.length);
   if(voteArr.length <= 2) {
@@ -30,7 +31,7 @@ export function handler(cli, message) {
     return;
   }
   else if (isNaN(voteArr[VOTE_ID_S])) {
-    createNewVote(cli, message);
+    createNewVote(cli, message, disID);
   }
   else if (voteArr.length <= 4 ) {
     if(voteArr[VOTE_S] === 'yes') {
