@@ -3,6 +3,35 @@ const Promise = require('bluebird');
 
 const url='mongodb://localhost:27017/demo';
 
+function base(queryFunc, collection) {
+  return new Promise((resolve, reject) => {
+    MongoClient.connect(url, (err, db) => {
+      const col = db.collection(collection);
+      const abst = queryFunc(col);     
+      abst((err,doc) => {
+        db.close();
+        if(err === null) {
+          resolve(doc);
+        }
+        else {
+          reject(err);
+        }
+      });
+    });
+  });
+}
+
+//queryFuncExamp(col) {
+//	col.findOne.bind(null, {_id:'CONFIG'});
+//}
+
+//  Try this out!!!
+export function getA() {
+	return base((col) => { 
+		return col.findOne.bind(null, {_id:'CONFIG'}); 
+	}, 'conifg');
+}
+
 export function getAnarchy() {
   return new Promise((resolve, reject) => {
     MongoClient.connect(url, (err, db) => {
