@@ -34,13 +34,6 @@ function base(queryFunc, collection) {
   });
 }
 
-export function getA() {
-
-	return base((col) => {
-		return col.findOne.bind(col, {_id:'CONFIG'});
-	}, 'config');
-}
-
 export function getAnarchy() {
   return base((col) => {
     return col.findOne.bind(col, {_id:'CONFIG'});
