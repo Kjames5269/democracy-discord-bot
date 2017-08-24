@@ -95,30 +95,14 @@ export function addNewVote(voteMsg, onSuccessful) {
 }
 
 export function voteOn(id, userID, vote) {
-  return new Promise((resolve, reject) => {
-    MongoClient.connect(url, (err, db) => {
-      const col = db.collection('votes');
-      console.log('updating id: ' + id + ' with vote ' + vote);
-      col.findOneAndUpdate(
-        { '_id': id },
-        { $pull: { 'users': { uid: userID }}},
-        (err, doc) => {
-          col.findOneAndUpdate(
-            { '_id': id },
-            { $addToSet: { 'users': { uid: userID, vote: vote}}},
-            (err, doc) => {
-              db.close();
-              if(err === null) {
-                resolve(doc);
-              }
-              else {
-                reject(err);
-              }
-            }
-          );
-        }
-      );
-    });
+  return base((col) => col.findOneAndUpdate.bind(col,
+    { '_id': id },
+    { $pull: { 'users': { uid: userID }}}),
+    'votes').then((doc,err) => {
+    return base((col) => col.findOneAndUpdate.bind(col,
+      { '_id': id },
+      { $addToSet: { 'users': { uid: userID, vote: vote}}}),
+      'votes')
   });
 }
 
