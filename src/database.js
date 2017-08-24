@@ -3,18 +3,6 @@ const Promise = require('bluebird');
 
 const url='mongodb://localhost:27017/demo';
 
-// just JS things... not sure why mongo doesn't
-// like variable names but it tilts the hell outta me
-function getCollection(db, collection) {
-  if(collection === 'config') {
-    return db.collection.call(db,'config');
-  }
-  if(collection === 'votes') {
-    return db.collection.call(db,'votes');
-  }
-  return null;
-}
-
 /* * * * *
  * Base:
  * Takes 2 args, a function that takes the collection and returns
@@ -31,7 +19,7 @@ function getCollection(db, collection) {
 function base(queryFunc, collection) {
   return new Promise((resolve, reject) => {
     MongoClient.connect(url, (err, db) => {
-      const col = getCollection(db, collection);
+      const col = db.collection(collection);
       const abst = queryFunc(col);
       abst((err,doc) => {
         db.close();
