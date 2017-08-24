@@ -15,6 +15,19 @@ function getCollection(db, collection) {
   return null;
 }
 
+/* * * * *
+ * Base:
+ * Takes 2 args, a function that takes the collection and returns
+ * a bound func with the appropriate query called on it.
+ * The second is the name of the collection
+ *
+ * Returns a promise;
+ *
+ * Ex: base((col) => {
+ *   return col.findOne.bind(col, {_id:'CONFIG'});
+ * }, 'config');))
+ */
+
 function base(queryFunc, collection) {
   return new Promise((resolve, reject) => {
     MongoClient.connect(url, (err, db) => {
@@ -33,11 +46,6 @@ function base(queryFunc, collection) {
   });
 }
 
-//queryFuncExamp(col) {
-//	col.findOne.bind(null, {_id:'CONFIG'});
-//}
-
-//  Try this out!!!
 export function getA() {
 
 	return base((col) => {
