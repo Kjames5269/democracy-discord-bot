@@ -54,97 +54,45 @@ export function getA() {
 }
 
 export function getAnarchy() {
-  return new Promise((resolve, reject) => {
-    MongoClient.connect(url, (err, db) => {
-      const col = db.collection('config');
-      col.findOne({_id:'CONFIG'},
-      (err,doc) => {
-        db.close();
-        if(err === null) {
-          resolve(doc.anarchy);
-        }
-        else {
-          reject(err);
-        }
-      });
-    });
-  });
+  return base((col) => {
+    return col.findOne.bind(col, {_id:'CONFIG'});
+  }, 'config');
 };
 
+/* if(to != 'true' && to != 'false' ) {
+  reject('incorrect bool value');
+  return;
+} */
+
 export function changeAnarchy(to) {
-  return new Promise((resolve, reject) => {
-    if(to != 'true' && to != 'false' ) {
-      reject('incorrect bool value');
-      return;
-    }
-    MongoClient.connect(url, (err, db) => {
-      const col = db.collection('config');
-      col.updateOne({_id:'CONFIG'},
-      { $set: { anarchy: to }},
-      (err,doc) => {
-        db.close();
-        if(err === null) {
-          resolve(doc);
-        }
-        else {
-          reject(err);
-        }
-      });
-    });
-  });
+  return base((col) => col.updateOne.bind(col,
+    {_id:'CONFIG'},
+    { $set: { anarchy: to }}),
+    'config');
 };
 
 
 function getNewVoteID() {
   console.log('getVoteID starting');
-  return new Promise((resolve, reject) => {
-    MongoClient.connect(url, (err, db) => {
-      const col = db.collection('config');
-      col.findOneAndUpdate({_id:'CONFIG'},
-      { $inc: {'lastVoteID': 1}},
-      { returnOriginal: false },
-      (err,doc) => {
-        db.close();
-        if(err === null) {
-          resolve(doc);
-        }
-        else {
-          reject(err);
-        }
-      });
-    });
-  });
+  return base((col) => col.findOneAndUpdate.bind(col,
+    {_id:'CONFIG'},
+    { $inc: {'lastVoteID': 1}},
+    { returnOriginal: false }),
+    'config');
 };
 
 export function addNewVote(voteMsg, onSuccessful) {
-  return new Promise((resolve, reject) => {
-    getNewVoteID().then((doc, err) => {
-      const id = doc.value.lastVoteID;
-      MongoClient.connect(url, (err, db) => {
-        const col = db.collection('votes');
-        col.insertOne(
-          {
-            '_id': id,
-            'message': voteMsg,
-            'users': [],
-            'onSuccess': onSuccessful
-          },
-          {},
-          (err, doc) => {
-            db.close();
-            //  console.log(err);
-            if(err === null) {
-              resolve(doc)
-            }
-            else {
-              reject(err);
-            }
-          }
-        );
-      });
-    });
+  return getNewVoteID().then((doc, err) => {
+    const id = doc.value.lastVoteID;
+    return base((col) => col.insertOne.bind(col,
+      {
+        '_id': id,
+        'message': voteMsg,
+        'users': [],
+        'onSuccess': onSuccessful
+      }), 'votes');
   });
-};
+}
 
 export function voteOn(id, userID, vote) {
   return new Promise((resolve, reject) => {
