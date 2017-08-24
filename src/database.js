@@ -107,18 +107,6 @@ export function voteOn(id, userID, vote) {
 }
 
 export function getResults(id) {
-  return new Promise((resolve, reject) => {
-    MongoClient.connect(url, (err, db) => {
-      const col = db.collection('votes');
-      col.findOne({ '_id': id }, (err, doc) => {
-        db.close();
-        if(err === null) {
-          resolve(doc);
-        }
-        else {
-          reject(err);
-        }
-      });
-    });
-  });
+  return base((col) => col.findOne.bind(col,
+    { '_id': id }), 'votes');
 }
