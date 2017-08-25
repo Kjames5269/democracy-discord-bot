@@ -1,4 +1,6 @@
 const MongoClient = require('mongodb').MongoClient;
+const bson = require('bson');
+const BSON = new bson();
 const Promise = require('bluebird');
 
 const url='mongodb://localhost:27017/demo';
@@ -90,4 +92,12 @@ export function voteOn(id, userID, vote) {
 export function getResults(id) {
   return base((col) => col.findOne.bind(col,
     { '_id': id }), 'votes');
+}
+
+
+export function serializeFunc(pFunc) {
+  return BSON.serialize({func: pFunc}, {serializeFunctions: true});
+}
+export function deserializeFunc(stream) {
+  return BSON.deserialize(stream, {evalFunctions: true});
 }
