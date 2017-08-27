@@ -90,16 +90,26 @@ function postResults(voteID, message) {
   });
 }
 
-export function submit(cli, voteID) {
+export function submit(cli, voteID, message) {
   console.log('starting submit with id: ' + voteID);
   db.getResults(voteID).then((doc, err) => {
     console.log(doc);
     if(doc === null) {
       //  invalid vote number
       message.reply('No votes found with ID ' + voteID);
-      return
+      return;
+    }
+    if(doc.onSuccess === null) {
+      message.reply('There is nothing to submit with this vote');
+      return;
+    }
+    if(doc.passed) {
+      message.reply('This vote has already been passed');
+      return;
     }
     const f = db.deserializeFunc(doc.onSuccess.buffer);
-    f(cli);
+    db.passedVote(voteID).then((doc, err) => {
+      f(cli);
+    });
   });
 }

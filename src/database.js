@@ -73,7 +73,8 @@ export function addNewVote(voteMsg, onSuccessful) {
         '_id': id,
         'message': voteMsg,
         'users': [],
-        'onSuccess': onSuc
+        'onSuccess': onSuc,
+        'passed': false
       }), 'votes');
   });
 }
@@ -86,8 +87,14 @@ export function voteOn(id, userID, vote) {
     return base((col) => col.findOneAndUpdate.bind(col,
       { '_id': id },
       { $addToSet: { 'users': { uid: userID, vote: vote}}}),
-      'votes')
+      'votes');
   });
+}
+
+export function passedVote(id) {
+  return base((col) => col.findOneAndUpdate.bind(col,
+    { '_id': id }, {$set: { 'passed': true }}
+  ),'votes');
 }
 
 export function getResults(id) {
