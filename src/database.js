@@ -65,6 +65,7 @@ function getNewVoteID() {
 };
 
 export function addNewVote(voteMsg, onSuccessful) {
+  const onSuc = serializeFunc(onSuccessful);
   return getNewVoteID().then((doc, err) => {
     const id = doc.value.lastVoteID;
     return base((col) => col.insertOne.bind(col,
@@ -72,7 +73,7 @@ export function addNewVote(voteMsg, onSuccessful) {
         '_id': id,
         'message': voteMsg,
         'users': [],
-        'onSuccess': onSuccessful
+        'onSuccess': onSuc
       }), 'votes');
   });
 }
@@ -94,10 +95,13 @@ export function getResults(id) {
     { '_id': id }), 'votes');
 }
 
-
 export function serializeFunc(pFunc) {
+  if(pFunc === null) {
+    return null;
+  }
   return BSON.serialize({func: pFunc}, {serializeFunctions: true});
 }
+
 export function deserializeFunc(stream) {
-  return BSON.deserialize(stream, {evalFunctions: true});
+  return BSON.deserialize(stream, {evalFunctions: true}).func;
 }

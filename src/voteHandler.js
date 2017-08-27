@@ -5,10 +5,7 @@ const errMsg = 'vote is used as follows: \nvote "message" to start a vote\nvote 
 const VOTE_ID_S = 2;
 const VOTE_S = 3
 
-export function createNewVote(cli, message, success) {
-  const voteArr = message.content.split(' ');
-    //console.log(doc);
-  const voteMsg = message.content.substring(message.content.indexOf('vote')+5);
+export function createNewVote(cli, message, voteMsg, success) {
   db.addNewVote(voteMsg, success).then((doc, err) => {
     const voteID = doc.ops[0]._id;
     message.reply('Started vote with ID: ' + voteID + '\n'
@@ -30,7 +27,7 @@ export function handler(cli, message) {
     return;
   }
   else if (isNaN(voteArr[VOTE_ID_S])) {
-    createNewVote(cli, message);
+    createNewVote(cli, message, message.content.substring(message.content.indexOf('vote')+5));
   }
   else if (voteArr.length <= 4 ) {
     if(voteArr[VOTE_S] === 'yes') {
@@ -90,5 +87,19 @@ function postResults(voteID, message) {
     }
 
     message.reply(doc.message + ': ' + yes + ' for, ' + no + ' against');
+  });
+}
+
+export function submit(cli, voteID) {
+  console.log('starting submit with id: ' + voteID);
+  db.getResults(voteID).then((doc, err) => {
+    console.log(doc);
+    if(doc === null) {
+      //  invalid vote number
+      message.reply('No votes found with ID ' + voteID);
+      return
+    }
+    const f = db.deserializeFunc(doc.onSuccess.buffer);
+    f(cli);
   });
 }
