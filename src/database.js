@@ -1,4 +1,6 @@
 const MongoClient = require('mongodb').MongoClient;
+const bson = require('bson');
+const BSON = new bson();
 const Promise = require('bluebird');
 
 const url='mongodb://localhost:27017/demo';
@@ -63,6 +65,7 @@ function getNewVoteID() {
 };
 
 export function addNewVote(voteMsg, onSuccessful) {
+  const onSuc = serializeFunc(onSuccessful);
   return getNewVoteID().then((doc, err) => {
     const id = doc.value.lastVoteID;
     return base((col) => col.insertOne.bind(col,
@@ -70,7 +73,8 @@ export function addNewVote(voteMsg, onSuccessful) {
         '_id': id,
         'message': voteMsg,
         'users': [],
-        'onSuccess': onSuccessful
+        'onSuccess': onSuc,
+        'passed': false
       }), 'votes');
   });
 }
@@ -83,11 +87,28 @@ export function voteOn(id, userID, vote) {
     return base((col) => col.findOneAndUpdate.bind(col,
       { '_id': id },
       { $addToSet: { 'users': { uid: userID, vote: vote}}}),
-      'votes')
+      'votes');
   });
+}
+
+export function passedVote(id) {
+  return base((col) => col.findOneAndUpdate.bind(col,
+    { '_id': id }, {$set: { 'passed': true }}
+  ),'votes');
 }
 
 export function getResults(id) {
   return base((col) => col.findOne.bind(col,
     { '_id': id }), 'votes');
+}
+
+export function serializeFunc(pFunc) {
+  if(pFunc === null) {
+    return null;
+  }
+  return BSON.serialize({func: pFunc}, {serializeFunctions: true});
+}
+
+export function deserializeFunc(stream) {
+  return BSON.deserialize(stream, {evalFunctions: true}).func;
 }
