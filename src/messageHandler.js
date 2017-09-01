@@ -1,6 +1,7 @@
 const Vote = require('./voteHandler.js');
 const Admin = require('./adminHandler.js');
-//const db = require('./database.js');
+const db = require('./database.js');
+const Anarchy = require('./anarchy.js');
 
 export default function (cli, message) {
 	if(message.author.bot) {
@@ -15,9 +16,14 @@ export default function (cli, message) {
 		Admin.handler(cli, message);
 	}
 	if(demo[1] === 'anarchy') {
-		console.log('starting stuff');
-		//db.getAnarchy().then((doc, err) => console.log(doc.anarchy));
-	} /*
+		Anarchy.on(cli, message);
+	}
+	if(demo[1] === 'democracy') {
+		Anarchy.off(cli, message);
+	}
+	if(demo[1] === 'mode') {
+		Anarchy.mode(cli, message);
+	}
 
 	if(demo[1] === 'b') {
 		db.changeAnarchy('true').then((doc,err) => console.log(doc));
@@ -46,5 +52,5 @@ export default function (cli, message) {
 		};
 		//	getMessage(message.channel,message.id).reply('hehe xd'); };
 		f1(cli).send('Demo recus');
-	} */
+	}
 }

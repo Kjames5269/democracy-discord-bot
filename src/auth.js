@@ -7,10 +7,10 @@ export default function (cli, message) {
 
   //  Server admin always has access
   if(guild.ownerID == userId) {
-    return true;
+  //  return true;
   }
 
-  db.getGuildSettings(guildId).then((doc, err) => {
+  return db.getGuildSettings(guildId).then((doc, err) => {
     const role = cli.guilds.get(guildId).members.get(userId).roles.get(doc.roleId);
     if(role == null) {
       message.reply('invalid permissions');
