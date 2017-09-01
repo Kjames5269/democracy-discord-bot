@@ -21,9 +21,6 @@ export function createNewVote(cli, message, voteMsg, success) {
 
 export function handler(cli, message) {
   console.log('starting vote')
-  if(!auth(cli, message)) {
-    return;
-  }
   const voteArr = message.content.split(' ');
 
   if(voteArr.length <= 2) {

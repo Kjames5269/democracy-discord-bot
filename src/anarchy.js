@@ -1,7 +1,6 @@
 const db = require('./database.js');
 const Vote = require('./voteHandler.js');
 
-
 function setAnarchy(cli, message, val) {
   db.getGuildSettings(message.guild.id).then((doc, err) => {
     if(doc.anarchy == val) {

@@ -1,12 +1,8 @@
 const Vote = require('./voteHandler.js');
-import auth from './auth.js';
 const db = require('./database.js');
 
 export function handler(cli, message) {
   console.log('starting admin duties')
-  if(!auth(cli, message)) {
-    return;
-  }
   const adminArr = message.content.split(' ');
 
   if(adminArr[2] === 'init') {

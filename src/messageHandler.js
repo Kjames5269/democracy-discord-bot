@@ -2,10 +2,14 @@ const Vote = require('./voteHandler.js');
 const Admin = require('./adminHandler.js');
 const db = require('./database.js');
 const Anarchy = require('./anarchy.js');
+import auth from './auth.js';
 
 export default function (cli, message) {
 	if(message.author.bot) {
 		console.log('Someone is trying to Ddos');
+		return;
+	}
+	if(!auth(cli, message)) {
 		return;
 	}
 	const demo = message.content.split(' ');
