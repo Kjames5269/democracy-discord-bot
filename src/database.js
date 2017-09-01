@@ -36,10 +36,10 @@ function base(queryFunc, collection) {
   });
 }
 
-export function getAnarchy() {
+export function getGuildSettings(guildId) {
   return base((col) => {
-    return col.findOne.bind(col, {_id:'CONFIG'});
-  }, 'config');
+    return col.findOne.bind(col, {_id: guildId});
+  }, 'guildConfig');
 };
 
 /* if(to != 'true' && to != 'false' ) {
@@ -47,11 +47,25 @@ export function getAnarchy() {
   return;
 } */
 
-export function changeAnarchy(to) {
+export function initializeWithRole(guildId, roleId) {
+  return base((col) => {
+    return col.insertOne.bind(col,
+      {_id: guildId, roleId: roleId, anarchy: 'false'});
+  }, 'guildConfig');
+};
+
+export function reset(guildId, roleId) {
   return base((col) => col.updateOne.bind(col,
-    {_id:'CONFIG'},
+    {_id: guildId},
+    { $set: { roleId: roleId, anarchy: 'false' }}),
+    'guildConfig');
+};
+
+export function changeAnarchy(to, guildId) {
+  return base((col) => col.updateOne.bind(col,
+    {_id: guildId},
     { $set: { anarchy: to }}),
-    'config');
+    'guildConfig');
 };
 
 
