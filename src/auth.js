@@ -7,7 +7,7 @@ export default function (cli, message) {
 
   //  Server admin always has access
   if(guild.ownerID == userId) {
-  //  return true;
+    return true;
   }
 
   return db.getGuildSettings(guildId).then((doc, err) => {
