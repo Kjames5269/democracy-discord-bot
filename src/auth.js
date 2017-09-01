@@ -17,5 +17,8 @@ export default function (cli, message) {
       return false;
     }
     return true;
+  }).catch((err) => {
+    message.reply('Uninitialized value. Have your server owner type admin init [voting role] [percentToPass(1-100)]');
+    return false;
   });
 };

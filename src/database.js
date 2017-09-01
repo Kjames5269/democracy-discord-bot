@@ -47,17 +47,17 @@ export function getGuildSettings(guildId) {
   return;
 } */
 
-export function initializeWithRole(guildId, roleId) {
+export function initializeWithRole(guildId, roleId, percent) {
   return base((col) => {
     return col.insertOne.bind(col,
-      {_id: guildId, roleId: roleId, anarchy: 'false'});
+      {_id: guildId, roleId: roleId, anarchy: 'false', percentToPass: percent});
   }, 'guildConfig');
 };
 
-export function reset(guildId, roleId) {
+export function reset(guildId, roleId, percent) {
   return base((col) => col.updateOne.bind(col,
     {_id: guildId},
-    { $set: { roleId: roleId, anarchy: 'false' }}),
+    { $set: { roleId: roleId, anarchy: 'false', percentToPass: percent}}),
     'guildConfig');
 };
 
