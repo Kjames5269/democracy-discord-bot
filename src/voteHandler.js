@@ -1,15 +1,17 @@
 const db = require('./database.js');
 const Promise = require('bluebird');
+import auth from './auth.js';
 
 const errMsg = 'vote is used as follows: \nvote "message" to start a vote\nvote voteID [yes, no]';
-const VOTE_ID_S = 2;
-const VOTE_S = 3
+const VOTE_ID_S = 2; //  Vote ID slot
+const VOTE_S = 3     //  Vote slot
 
 export function createNewVote(cli, message, voteMsg, success) {
-  db.addNewVote(voteMsg, success).then((doc, err) => {
+  return db.addNewVote(voteMsg, message.guild.id, success).then((doc, err) => {
     const voteID = doc.ops[0]._id;
     message.reply('Started vote with ID: ' + voteID + '\n'
     + voteMsg + '\nvote ' + voteID + ' [string]');
+    return voteID;
   }).catch(e => {
     message.reply('There was a problem starting the vote at this time');
     console.log('Caught error during insertOne');
@@ -21,7 +23,6 @@ export function handler(cli, message) {
   console.log('starting vote')
   const voteArr = message.content.split(' ');
 
-  console.log(voteArr.length);
   if(voteArr.length <= 2) {
     message.reply(errMsg);
     return;
@@ -33,7 +34,7 @@ export function handler(cli, message) {
     preVote(voteArr[VOTE_ID_S], voteArr[VOTE_S], message);
   }
   else if (voteArr.length == 3) {
-    if(isNaN(voteArr[VOTE_ID])) {
+    if(isNaN(voteArr[VOTE_ID_S])) {
       message.reply(errMsg);
     }
     else {
@@ -51,9 +52,7 @@ function preVote(voteID, vote, message) {
     message.reply('vote id [string]. help for more');
   }
   else {
-    db.voteOn(parseInt(voteID), message.author.id, vote).then((doc, err) => {
-      //console.log(doc);
-      //console.log(err);
+    db.voteOn(parseInt(voteID), message.author.id, message.guild.id, vote).then((doc, err) => {
       postResults(parseInt(voteID),message);
     });
   }
@@ -82,11 +81,11 @@ function stringify (voteMsg, obj) {
 }
 
 function postResults(voteID, message) {
-  db.getResults(voteID).then((doc, err) => {
+  db.getResults(voteID, message.guild.id).then((doc, err) => {
     //console.log(doc);
     if(doc === null) {
       //  invalid vote number
-      message.reply('No votes found with ID ' + voteID);
+      message.reply('No votes in your channel found with ID ' + voteID);
       return
     }
 
@@ -96,8 +95,7 @@ function postResults(voteID, message) {
 
 export function submit(cli, voteID, message) {
   console.log('starting submit with id: ' + voteID);
-  db.getResults(voteID).then((doc, err) => {
-    console.log(doc);
+  db.getResults(voteID, message.guild.id).then((doc, err) => {
     if(doc === null) {
       //  invalid vote number
       message.reply('No votes found with ID ' + voteID);
@@ -111,9 +109,29 @@ export function submit(cli, voteID, message) {
       message.reply('This vote has already been passed');
       return;
     }
-    const f = db.deserializeFunc(doc.onSuccess.buffer);
-    db.passedVote(voteID).then((doc, err) => {
-      f(cli);
+
+    db.getGuildSettings(message.guild.id).then((doc2, err) => {
+      const guildId = message.guild.id;
+      const guild = cli.guilds.get(guildId);
+
+      const totalVoters = cli.guilds.get(guildId).members.filter((usr) => {
+        return usr.roles.get(doc2.roleId)
+      }).array().length;
+
+      const neededToPass = (doc2.percentToPass * .01 * totalVoters).toFixed(2);
+      const yeses = countVotes(doc.users).yes || 0;
+
+      if(yeses > neededToPass) {
+        message.reply('Vote ' + voteID + ' passed!');
+        const f = db.deserializeFunc(doc.onSuccess.buffer);
+        db.passedVote(voteID).then((doc, err) => {
+          f(cli, message, db);
+        });
+      }
+      else {
+        message.reply(stringify(doc.message, countVotes(doc.users)) + ' , you need '
+          + neededToPass + ' yeses to pass. Only have ' + yeses);
+      }
     });
   });
 }

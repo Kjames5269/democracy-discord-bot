@@ -1,19 +1,34 @@
 const Vote = require('./voteHandler.js');
-//const db = require('./database.js');
+const Admin = require('./adminHandler.js');
+const db = require('./database.js');
+const Anarchy = require('./anarchy.js');
+import auth from './auth.js';
 
 export default function (cli, message) {
 	if(message.author.bot) {
 		console.log('Someone is trying to Ddos');
 		return;
 	}
+	if(!auth(cli, message)) {
+		return;
+	}
 	const demo = message.content.split(' ');
 	if(demo[1] === 'vote') {
 		Vote.handler(cli, message);
 	}
+	if(demo[1] === 'admin') {
+		Admin.handler(cli, message);
+	}
 	if(demo[1] === 'anarchy') {
-		console.log('starting stuff');
-		//db.getAnarchy().then((doc, err) => console.log(doc.anarchy));
-	} /*
+		Anarchy.on(cli, message);
+	}
+	if(demo[1] === 'democracy') {
+		Anarchy.off(cli, message);
+	}
+	if(demo[1] === 'mode') {
+		Anarchy.mode(cli, message);
+	}
+
 	if(demo[1] === 'b') {
 		db.changeAnarchy('true').then((doc,err) => console.log(doc));
 	}
@@ -41,5 +56,5 @@ export default function (cli, message) {
 		};
 		//	getMessage(message.channel,message.id).reply('hehe xd'); };
 		f1(cli).send('Demo recus');
-	} */
+	}
 }

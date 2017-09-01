@@ -36,24 +36,50 @@ function base(queryFunc, collection) {
   });
 }
 
-export function getAnarchy() {
-  return base((col) => {
-    return col.findOne.bind(col, {_id:'CONFIG'});
-  }, 'config');
-};
+// guild settings
 
-/* if(to != 'true' && to != 'false' ) {
-  reject('incorrect bool value');
-  return;
-} */
-
-export function changeAnarchy(to) {
+export function changeAnarchy(to, guildId) {
   return base((col) => col.updateOne.bind(col,
-    {_id:'CONFIG'},
+    {_id: guildId},
     { $set: { anarchy: to }}),
-    'config');
+    'guildConfig');
 };
 
+export function getGuildSettings(guildId) {
+  return base((col) => {
+    return col.findOne.bind(col, {_id: guildId});
+  }, 'guildConfig');
+};
+
+export function setLockStatus(guildId, lock) {
+  return base((col) => col.updateOne.bind(col,
+    {_id: guildId},
+    { $set: { statusLocked: lock}}),
+    'guildConfig');
+}
+
+//  initializations
+/* id: guild ID discord makes it unique
+   roleId: the id of the roll that is allowed to vote
+   anarchy: are actions voted on before happening
+   percentToPass: what percent needs to vote yes for a action to occur
+   statusLocked: When true a anacrhy or demo vote cannot be started
+*/
+export function initializeWithRole(guildId, roleId, percent) {
+  return base((col) => {
+    return col.insertOne.bind(col,
+      {_id: guildId, roleId: roleId, anarchy: false, percentToPass: percent , statusLocked: false});
+  }, 'guildConfig');
+};
+
+export function reset(guildId, roleId, percent) {
+  return base((col) => col.updateOne.bind(col,
+    {_id: guildId},
+    { $set: { roleId: roleId, anarchy: false, percentToPass: percent, statusLocked: false}}),
+    'guildConfig');
+};
+
+//  Votes of all kinds
 
 function getNewVoteID() {
   console.log('getVoteID starting');
@@ -64,7 +90,7 @@ function getNewVoteID() {
     'config');
 };
 
-export function addNewVote(voteMsg, onSuccessful) {
+export function addNewVote(voteMsg, guildId, onSuccessful) {
   const onSuc = serializeFunc(onSuccessful);
   return getNewVoteID().then((doc, err) => {
     const id = doc.value.lastVoteID;
@@ -73,19 +99,20 @@ export function addNewVote(voteMsg, onSuccessful) {
         '_id': id,
         'message': voteMsg,
         'users': [],
+        'guildId': guildId,
         'onSuccess': onSuc,
         'passed': false
       }), 'votes');
   });
 }
 
-export function voteOn(id, userID, vote) {
+export function voteOn(id, userID, guildId, vote) {
   return base((col) => col.findOneAndUpdate.bind(col,
-    { '_id': id },
+    { '_id': id, guildId: guildId },
     { $pull: { 'users': { uid: userID }}}),
     'votes').then((doc,err) => {
     return base((col) => col.findOneAndUpdate.bind(col,
-      { '_id': id },
+      { '_id': id, guildId: guildId },
       { $addToSet: { 'users': { uid: userID, vote: vote}}}),
       'votes');
   });
@@ -97,10 +124,13 @@ export function passedVote(id) {
   ),'votes');
 }
 
-export function getResults(id) {
+export function getResults(id, guildId) {
   return base((col) => col.findOne.bind(col,
-    { '_id': id }), 'votes');
+    { '_id': id, guildId: guildId }), 'votes');
 }
+
+
+//  Serializing functions
 
 export function serializeFunc(pFunc) {
   if(pFunc === null) {
