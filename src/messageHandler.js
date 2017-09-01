@@ -1,4 +1,5 @@
 const Vote = require('./voteHandler.js');
+const Admin = require('./adminHandler.js');
 //const db = require('./database.js');
 
 export default function (cli, message) {
@@ -10,10 +11,14 @@ export default function (cli, message) {
 	if(demo[1] === 'vote') {
 		Vote.handler(cli, message);
 	}
+	if(demo[1] === 'admin') {
+		Admin.handler(cli, message);
+	}
 	if(demo[1] === 'anarchy') {
 		console.log('starting stuff');
 		//db.getAnarchy().then((doc, err) => console.log(doc.anarchy));
 	} /*
+
 	if(demo[1] === 'b') {
 		db.changeAnarchy('true').then((doc,err) => console.log(doc));
 	}

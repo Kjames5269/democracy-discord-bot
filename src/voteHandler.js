@@ -1,5 +1,6 @@
 const db = require('./database.js');
 const Promise = require('bluebird');
+import auth from './auth.js';
 
 const errMsg = 'vote is used as follows: \nvote "message" to start a vote\nvote voteID [yes, no]';
 const VOTE_ID_S = 2;
@@ -18,6 +19,10 @@ export function createNewVote(cli, message, voteMsg, success) {
 }
 
 export function handler(cli, message) {
+  if(!auth(cli, message)) {
+    return;
+  }
+
   console.log('starting vote')
   const voteArr = message.content.split(' ');
 
