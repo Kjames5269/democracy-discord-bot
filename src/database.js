@@ -90,7 +90,7 @@ function getNewVoteID() {
     'config');
 };
 
-export function addNewVote(voteMsg, guildId, onSuccessful) {
+export function addNewVote(voteMsg, guildId, onSuccessful, params) {
   const onSuc = serializeFunc(onSuccessful);
   return getNewVoteID().then((doc, err) => {
     const id = doc.value.lastVoteID;
@@ -101,6 +101,7 @@ export function addNewVote(voteMsg, guildId, onSuccessful) {
         'users': [],
         'guildId': guildId,
         'onSuccess': onSuc,
+        'params': params,
         'passed': false
       }), 'votes');
   });

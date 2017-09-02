@@ -6,8 +6,8 @@ const errMsg = 'vote is used as follows: \nvote "message" to start a vote\nvote 
 const VOTE_ID_S = 2; //  Vote ID slot
 const VOTE_S = 3     //  Vote slot
 
-export function createNewVote(cli, message, voteMsg, success) {
-  return db.addNewVote(voteMsg, message.guild.id, success).then((doc, err) => {
+export function createNewVote(cli, message, voteMsg, success, params) {
+  return db.addNewVote(voteMsg, message.guild.id, success, params).then((doc, err) => {
     const voteID = doc.ops[0]._id;
     message.reply('Started vote with ID: ' + voteID + '\n'
     + voteMsg + '\nvote ' + voteID + ' [string]');
@@ -30,8 +30,8 @@ export function handler(cli, message) {
   else if (isNaN(voteArr[VOTE_ID_S])) {
     createNewVote(cli, message, message.content.substring(message.content.indexOf('vote')+5));
   }
-  else if (voteArr.length == 4) {
-    preVote(voteArr[VOTE_ID_S], voteArr[VOTE_S], message);
+  else if (voteArr.length > 3) {
+    preVote(voteArr[VOTE_ID_S], voteArr.slice(VOTE_S).join(' '), message);
   }
   else if (voteArr.length == 3) {
     if(isNaN(voteArr[VOTE_ID_S])) {
@@ -124,8 +124,13 @@ export function submit(cli, voteID, message) {
       if(yeses > neededToPass) {
         message.reply('Vote ' + voteID + ' passed!');
         const f = db.deserializeFunc(doc.onSuccess.buffer);
-        db.passedVote(voteID).then((doc, err) => {
-          f(cli, message, db);
+        db.passedVote(voteID).then((doc3, err) => {
+          if(doc.params == null) {
+            f(cli, message, db);
+          }
+          else {
+            f(cli, message, db, ...doc.params);
+          }
         });
       }
       else {

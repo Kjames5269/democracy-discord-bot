@@ -1,4 +1,5 @@
 const db = require('./database.js');
+const Promise = require('bluebird');
 
 export default function (cli, message) {
   const guildId = message.guild.id;
@@ -7,7 +8,9 @@ export default function (cli, message) {
 
   //  Server admin always has access
   if(guild.ownerID == userId) {
-    return true;
+    return new Promise((res, rej) => {
+      res(true);
+    });
   }
 
   return db.getGuildSettings(guildId).then((doc, err) => {
