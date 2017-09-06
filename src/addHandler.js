@@ -93,7 +93,7 @@ function addRole(cli, message, db, role) {
 
   const roleId = role.split('&')[1].split('>')[0];
 
-  if(cli.guild.get(message.guild.id).roles.get(roleId) == null) {
+  if(cli.guilds.get(message.guild.id).roles.get(roleId) == null) {
     message.reply('the role has been deleted or removed. Cannot complete your request');
     return;
   }
