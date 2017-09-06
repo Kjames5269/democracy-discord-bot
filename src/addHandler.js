@@ -84,7 +84,7 @@ function addWithMentions(cli, message, voteMsg, errMsg, f, boolFunc) {
 }
 
 function addRole(cli, message, db, role) {
-  const args = [...params];
+  const args = [...arguments];
   const ids = args.slice(4);
   console.log(ids);
   const members = cli.guilds.get(message.guild.id).members.filter((usr) => {
@@ -106,7 +106,7 @@ function addRole(cli, message, db, role) {
 }
 
 function addNickname(cli, message, db, nickName) {
-  const args = [...params];
+  const args = [...arguments];
   const ids = args.slice(4);
   console.log(ids);
   const members = cli.guilds.get(message.guild.id).members.filter((usr) => {
