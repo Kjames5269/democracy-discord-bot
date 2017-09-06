@@ -66,7 +66,7 @@ function addWithMentions(cli, message, voteMsg, errMsg, f, boolFunc) {
 
   if(boolFunc != null) {
     if(!boolFunc(cli, message, name)) {
-      message.reply(name + ' does not exist in the context you want it to');
+      message.reply(errMsg + ' (something could not be found)');
       return;
     }
   }
@@ -83,17 +83,14 @@ function addWithMentions(cli, message, voteMsg, errMsg, f, boolFunc) {
   });
 }
 
-function getMembers(params) {
-    const args = [...params];
-    const ids = args.slice(4);
-    console.log(ids);
-    return cli.guilds.get(message.guild.id).members.filter((usr) => {
-      return ids.includes(usr.id);
-    });
-}
-
 function addRole(cli, message, db, role) {
-  const members = getMembers(arguments);
+  const args = [...params];
+  const ids = args.slice(4);
+  console.log(ids);
+  const members = cli.guilds.get(message.guild.id).members.filter((usr) => {
+    return ids.includes(usr.id);
+  });
+
   const roleId = role.split('&')[1].split('>')[0];
 
   if(cli.guild.get(message.guild.id).roles.get(roleId) == null) {
@@ -109,7 +106,12 @@ function addRole(cli, message, db, role) {
 }
 
 function addNickname(cli, message, db, nickName) {
-  const members = getMembers(arguments);
+  const args = [...params];
+  const ids = args.slice(4);
+  console.log(ids);
+  const members = cli.guilds.get(message.guild.id).members.filter((usr) => {
+    return ids.includes(usr.id);
+  });
 
   members.forEach((ele) => {
     ele.setNickname(nickName, 'Voted on by the masses').catch((err) => {
