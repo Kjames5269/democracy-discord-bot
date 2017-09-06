@@ -9,11 +9,19 @@ export function handler(cli, message) {
   }
   if(addArr[2] === 'nickname') {
     addWithMentions(cli, message,
-      'give the nickname ',  //TODO
+      'give the nickname ',
       'add nickname <mentionUser> <nickName> ',
       addNickname
     );
   }
+  if(addArr[2] === 'role') {
+    addWithMentions(cli, message,
+      'give the role ',
+      'add role <mentionUser> <mentionedRole>',
+      addRole
+    );
+  }
+
 }
 
 function gatherMentions(cli, message) {
@@ -58,6 +66,23 @@ function addWithMentions(cli, message, voteMsg, errMsg, f) {
       Vote.createNewVote(cli, message,
          voteMsg + name + ' to ' + mentionStr, f, arr);
     }
+  });
+}
+
+function addRole(cli, message, db, role) {
+  const args = [...arguments];
+  const ids = args.slice(4);
+  console.log(ids);
+  const members = cli.guilds.get(message.guild.id).members.filter((usr) => {
+    return ids.includes(usr.id);
+  });
+
+  const roleId = role.split('&')[1].split('>')[0];
+
+  members.forEach((ele) => {
+    ele.addRole(roleId, 'Voted on by the masses').catch((err) => {
+      console.log(err);
+    });
   });
 }
 
