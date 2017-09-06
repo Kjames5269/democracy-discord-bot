@@ -90,8 +90,12 @@ function getMembers(params) {
 
 function addRole(cli, message, db, role) {
   const members = getMembers(arguments);
-
   const roleId = role.split('&')[1].split('>')[0];
+
+  if(cli.guild.get(message.guild.id).roles.get(roleId) == null) {
+    message.reply('the role has been deleted or removed. Cannot complete your request');
+    return;
+  }
 
   members.forEach((ele) => {
     ele.addRole(roleId, 'Voted on by the masses').catch((err) => {
