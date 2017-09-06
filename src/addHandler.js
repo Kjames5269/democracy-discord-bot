@@ -20,8 +20,12 @@ export function handler(cli, message) {
       'add role <mentionUser> <mentionedRole>',
       addRole,
       (cli, message, name) => {
-          const roleId = name.split('&')[1].split('>')[0];
-          return cli.guilds.get(message.guild.id).roles.get(roleId) == null;
+          const role1 = name.split('&')[1];
+          if(role1 == null) {
+            return false;
+          }
+          const roleId = role1.split('>')[0];
+          return cli.guilds.get(message.guild.id).roles.get(roleId) != null;
       }
     );
   }
