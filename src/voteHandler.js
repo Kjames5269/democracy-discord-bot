@@ -52,8 +52,16 @@ function preVote(voteID, vote, message) {
     message.reply('vote id [string]. help for more');
   }
   else {
-    db.voteOn(parseInt(voteID), message.author.id, message.guild.id, vote).then((doc, err) => {
-      postResults(parseInt(voteID),message);
+    db.getResults(parseInt(voteID), message.guild.id).then((doc, err) => {
+      if(doc.passed) {
+        message.reply('This vote has been archived and can no longer be voted on');
+        return;
+      }
+      else {
+        db.voteOn(parseInt(voteID), message.author.id, message.guild.id, vote).then((doc, err) => {
+          postResults(parseInt(voteID),message);
+        });
+      }
     });
   }
 }
@@ -80,7 +88,7 @@ function stringify (voteMsg, obj) {
   return str.substring(0, str.length - 2);
 }
 
-function postResults(voteID, message) {
+export function postResults(voteID, message) {
   db.getResults(voteID, message.guild.id).then((doc, err) => {
     //console.log(doc);
     if(doc === null) {
@@ -125,6 +133,9 @@ export function submit(cli, voteID, message) {
         message.reply('Vote ' + voteID + ' passed!');
         const f = db.deserializeFunc(doc.onSuccess.buffer);
         db.passedVote(voteID).then((doc3, err) => {
+          if(f == null) {
+            return;
+          }
           if(doc.params == null) {
             f(cli, message, db);
           }

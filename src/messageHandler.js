@@ -34,8 +34,13 @@ export default function (cli, message) {
 		if(demo[1] === 'add') {
 			Add.handler(cli, message);
 		}
+		//  Vote leftovers
 		if(demo[1] === 'submit') {
 			Vote.submit(cli, parseInt(demo[2]), message);
+		}
+		//  A shortcut to Demo vote num because its more intutive
+		if(demo[1] === 'results') {
+			Vote.postResults(parseInt(demo[2]), message);
 		}
 	});
 }
