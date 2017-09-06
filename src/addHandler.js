@@ -18,7 +18,11 @@ export function handler(cli, message) {
     addWithMentions(cli, message,
       'give the role ',
       'add role <mentionUser> <mentionedRole>',
-      addRole
+      addRole,
+      (cli, message, name) => {
+          const roleId = name.split('&')[1].split('>')[0];
+          return cli.guilds.get(message.guild.id).roles.get(roleId) == null;
+      }
     );
   }
 
@@ -35,7 +39,7 @@ function gatherMentions(cli, message) {
   });
 }
 
-function addWithMentions(cli, message, voteMsg, errMsg, f) {
+function addWithMentions(cli, message, voteMsg, errMsg, f, boolFunc) {
   const addArr = message.content.split(' ');
   if(addArr.length < 5 ) {
     message.reply(errMsg)
@@ -56,6 +60,12 @@ function addWithMentions(cli, message, voteMsg, errMsg, f) {
     return '<@' + ele + '>';
   }).join(' ');
 
+  if(boolFunc != null) {
+    if(!boolFunc(cli, message, name)) {
+      message.reply(name + ' does not exist in the context you want it to');
+      return;
+    }
+  }
 
   Anarchy.check(cli, message).then((doc) => {
     if(doc) {
@@ -69,13 +79,17 @@ function addWithMentions(cli, message, voteMsg, errMsg, f) {
   });
 }
 
+function getMembers(params) {
+    const args = [...params];
+    const ids = args.slice(4);
+    console.log(ids);
+    return cli.guilds.get(message.guild.id).members.filter((usr) => {
+      return ids.includes(usr.id);
+    });
+}
+
 function addRole(cli, message, db, role) {
-  const args = [...arguments];
-  const ids = args.slice(4);
-  console.log(ids);
-  const members = cli.guilds.get(message.guild.id).members.filter((usr) => {
-    return ids.includes(usr.id);
-  });
+  const members = getMembers(arguments);
 
   const roleId = role.split('&')[1].split('>')[0];
 
@@ -87,12 +101,7 @@ function addRole(cli, message, db, role) {
 }
 
 function addNickname(cli, message, db, nickName) {
-  const args = [...arguments];
-  const ids = args.slice(4);
-  console.log(ids);
-  const members = cli.guilds.get(message.guild.id).members.filter((usr) => {
-    return ids.includes(usr.id);
-  });
+  const members = getMembers(arguments);
 
   members.forEach((ele) => {
     ele.setNickname(nickName, 'Voted on by the masses').catch((err) => {
