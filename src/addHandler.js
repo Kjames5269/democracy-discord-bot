@@ -134,11 +134,15 @@ function addChannel(cli, message) {
     return;
   }
 
-  const type = addArr[3];
-  const name = addArr.slice(4).join(' ');
+  const type = addArr[3].join(' ');
+  var name = addArr.slice(4);
   if(type !== 'text' && type !== 'voice') {
     message.reply(err);
     return;
+  }
+
+  if(type === 'text') {
+    name = name.replace(' ', '-');
   }
 
   const existCheck = cli.guilds.get(message.guild.id).channels.find((chan) => {
