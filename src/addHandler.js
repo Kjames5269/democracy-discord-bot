@@ -29,7 +29,6 @@ export function handler(cli, message) {
       }
     );
   }
-
 }
 
 function gatherMentions(cli, message) {
