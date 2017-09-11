@@ -1,6 +1,11 @@
 //  etc
 const Vote = require('./voteHandler.js');
 const Promise = require('bluebird');
+const func = require('./func.js');
+const db = require('./database.js');
+
+const _timerPromises = [];
+Promise.config({cancellation: true});
 
 //  This is used for shortcuts and memes;
 export function handler(cli, message) {
@@ -36,14 +41,49 @@ export function handler(cli, message) {
       message.reply('countdown <numberInMinutes> <msg>');
       return;
     }
+    if(_timerPromises[message.guild.id] != null) {
+      message.reply('There is a timer already in progress in your server #designDecisions');
+      return;
+    }
+
     const msg = demo.splice(3).join(' ');
     const mins = parseInt(demo[2]);
     var millis = mins * 60 * 1000;
   //  chann.send('Timer: ' + msg + ' in ' + mins + ' minutes');
-
-    promiseCreator(chann, msg, millis, mins).then(() => {
-      chann.send('Timer: ' + msg + ' happening now!');
+    db.addTimer(message.guild.id, chann.id, func.gatherMentions(cli, message, true));
+    _timerPromises[message.guild.id] = {
+      prom: promiseCreator(message.guild.id, chann, msg, millis, mins).then(() => {
+        chann.send('Timer: ' + msg + ' happening now!\n@everyone');
+        _timerPromises[message.guild.id] = null;
+      }),
+      msg: null
+    }
+  }
+  else if(demoJ === 'Demo stop countdown') {
+    if(_timerPromises[message.guild.id] == null) {
+      message.reply('No timer in progress');
+      return;
+    }
+    _timerPromises[message.guild.id].prom.cancel();
+    message.reply('The timer has been stopped');
+    _timerPromises[message.guild.id] = null;
+    db.removeTimer(message.guild.id);
+  }
+  else if(demo[1] == 'debug') {
+    func.gatherMentions(cli, message);
+  }
+  else if(demo[1] == 'here') {
+    db.timerPullMem(message.guild.id, message.author.id);
+    message.reply('Glad to have ya').then((greetings) => {
+      greetings.delete(7000);
     });
+    message.delete(7000);
+    if(_timerPromises[message.guild.id]) {
+      const content = _timerPromises[message.guild.id].msg.content.split('\n').slice(0,-1).join('\n');
+      timerMsgPrep(message.guild.id, content).then((msg) => {
+        _timerPromises[message.guild.id].msg.edit(msg);
+      });
+    }
   }
   //chann.createInvite() => returns invite
 }
@@ -65,17 +105,34 @@ function getNextMin(millis, mins) {
   return { mil: millis / 2, min: millis / 1000 / 60 };
 }
 
-function promiseCreator(chann, msg, millis, mins) {
+function timerMsgPrep(guild, msg) {
+  return db.getTimerStatus(guild).then((time) => {
+    return time.members;
+  }).then((members) => {
+    const mentionStr = msg + '\n' + members.map((ele) => {
+      return '<@' + ele + '>';
+    }).join(' ');
+    return mentionStr;
+  });
+}
+
+function promiseCreator(guild, chann, msg, millis, mins) {
   const ob = getNextMin(millis, mins);
   const min = ob.min;
   const milli = ob.mil;
-  chann.send('Timer: ' + msg + ' in ' + min + ' minutes');
-  if(mins > 1) {
-    return Promise.delay(milli, {chan:chann, msg: msg, milli: milli, min: ob.next}).then((doc) => {
-      return promiseCreator(doc.chan, doc.msg, doc.milli, doc.min);
+  const msgStr = 'Timer: ' + msg + ' in ' + min + ' minutes';
+  return timerMsgPrep(guild, msgStr).then((mentionStr) => {
+    chann.send(mentionStr).then((timerMessage) => {
+      _timerPromises[guild].msg = timerMessage;
+      timerMessage.delete(milli)
     });
-  }
-  else {
-    return Promise.delay(millis);
-  }
+    if(mins > 1) {
+      return Promise.delay(milli, { guild: guild, chan:chann, msg: msg, milli: milli, min: ob.next }).then((doc) => {
+        return promiseCreator(doc.guild, doc.chan, doc.msg, doc.milli, doc.min);
+      });
+    }
+    else {
+      return Promise.delay(millis);
+    }
+  });
 }

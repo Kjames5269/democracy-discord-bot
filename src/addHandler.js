@@ -1,5 +1,6 @@
 const Vote = require('./voteHandler.js');
 const Anarchy = require('./anarchy.js');
+const func = require('./func.js');
 
 export function handler(cli, message) {
   console.log('addHandler Starting');
@@ -31,24 +32,13 @@ export function handler(cli, message) {
   }
 }
 
-function gatherMentions(cli, message) {
-  if(message.mentions.everyone) {
-    return cli.guilds.get(message.guild.id).members.map((usr) => {
-      return usr.id;
-    });
-  }
-  return message.mentions.users.map((usr) => {
-    return usr.id;
-  });
-}
-
 function addWithMentions(cli, message, voteMsg, errMsg, f, boolFunc) {
   const addArr = message.content.split(' ');
   if(addArr.length < 5 ) {
     message.reply(errMsg)
     return;
   }
-  const mentions = gatherMentions(cli, message);
+  const mentions = func.gatherMentions(cli, message);
   if(mentions.length === 0) {
     message.reply(errMsg);
     return;

@@ -130,7 +130,34 @@ export function getResults(id, guildId) {
     { '_id': id, guildId: guildId }), 'votes');
 }
 
+//  Timer functions:
+export function addTimer(guildId, chanId, membersArr) {
+  return base((col) => col.findOneAndUpdate.bind(col,
+    { '_id': guildId },
+    { '$set': { chan: chanId, members: membersArr }},
+    { 'upsert': true }
+  ), 'timers');
+}
 
+export function timerPullMem(guildId, memberId) {
+  return base((col) => col.findOneAndUpdate.bind(col,
+    { '_id': guildId },
+    { '$pull': { members: memberId }}
+  ), 'timers');
+}
+
+export function removeTimer(guildId) {
+  return base((col) => col.findOneAndUpdate.bind(col,
+    { '_id': guildId },
+    { '$set': { members: [], chan: '0' }}
+  ), 'timers');
+}
+
+export function getTimerStatus(guildId) {
+  return base((col) => col.findOne.bind(col,
+    { '_id': guildId }
+  ), 'timers');
+}
 //  Serializing functions
 
 export function serializeFunc(pFunc) {
