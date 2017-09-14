@@ -55,6 +55,7 @@ export function handler(cli, message) {
       prom: promiseCreator(message.guild.id, chann, msg, millis, mins).then(() => {
         chann.send('Timer: ' + msg + ' happening now!\n@everyone');
         _timerPromises[message.guild.id] = null;
+        db.removeTimer(message.guild.id);
       }),
       msg: null
     }
